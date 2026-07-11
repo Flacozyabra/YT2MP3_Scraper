@@ -219,12 +219,6 @@ def main():
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         },
-        # Use Smart TV clients first to bypass PO Token/403 requirements for audio
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['tv', 'tv_embedded', 'android', 'web']
-            }
-        }
     }
     
     # Inject browser cookies if selected
