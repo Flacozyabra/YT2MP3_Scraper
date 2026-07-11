@@ -99,7 +99,7 @@ def main():
         # Bypass YouTube bot detection by using alternative clients (standard compatibility)
         'extractor_args': {
             'youtube': {
-                'player_client': ['android_creator', 'web_creator']
+                'player_client': ['ios']
             }
         }
     }
