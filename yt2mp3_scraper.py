@@ -50,17 +50,51 @@ def get_browser_choice():
         return "brave"
     return None
 
+def check_dependencies():
+    """Verify that all external dependencies (ffmpeg, node/deno JS runtimes) are installed."""
+    print("[*] Проверка системных зависимостей...")
+    
+    # 1. Check ffmpeg
+    ffmpeg_loc = find_ffmpeg()
+    
+    # 2. Check JavaScript runtimes (node, deno)
+    js_runtime = shutil.which("node") or shutil.which("deno")
+    
+    dependencies_ok = True
+    
+    if not ffmpeg_loc:
+        print("\n[ВНИМАНИЕ] ffmpeg не найден в вашей системе!")
+        print("  -> Без него невозможно конвертировать скачанное аудио в формат MP3.")
+        print("  -> Способ установки: откройте PowerShell от Администратора и запустите:")
+        print("     winget install Gyan.FFmpeg")
+        dependencies_ok = False
+    else:
+        print("  [+] ffmpeg: найден")
+        
+    if not js_runtime:
+        print("\n[ВНИМАНИЕ] Среда JavaScript (Node.js / Deno) не найдена в системе!")
+        print("  -> Без нее YouTube будет блокировать скачивание некоторых видео (ошибка 403 / Requested format is not available).")
+        print("  -> Способ установки: откройте PowerShell от Администратора и запустите:")
+        print("     winget install OpenJS.NodeJS")
+        dependencies_ok = False
+    else:
+        print("  [+] Среда JavaScript (Node.js/Deno): найдена")
+        
+    if not dependencies_ok:
+        print("\n[Ошибка] Не все обязательные зависимости установлены.")
+        print("Пожалуйста, установите недостающие пакеты командами выше и перезапустите программу.")
+        sys.exit(1)
+        
+    print("[+] Все зависимости проверены успешно!\n")
+    return ffmpeg_loc
+
 def main():
     print("=" * 60)
     print("   YT2MP3 Scraper (yt-dlp + ffmpeg)")
     print("=" * 60)
     
-    # Locate ffmpeg
-    ffmpeg_loc = find_ffmpeg()
-    if not ffmpeg_loc:
-        print("[Ошибка] ffmpeg не найден в системе. Скрипт не сможет сконвертировать аудио в MP3.")
-        print("Убедитесь, что ffmpeg установлен корректно.")
-        sys.exit(1)
+    # Verify and locate dependencies (ffmpeg and JS runtime)
+    ffmpeg_loc = check_dependencies()
         
     # Get YouTube URL
     url = input("Введите ссылку на YouTube-канал, плейлист или видео: ").strip()
