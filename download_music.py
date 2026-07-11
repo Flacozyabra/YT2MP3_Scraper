@@ -96,7 +96,12 @@ def main():
         # Emulate browser TLS fingerprint so that 'zapret' can bypass DPI correctly
         'impersonate': ImpersonateTarget.from_str('chrome'),
         'http_backend': 'curl_cffi',
-
+        # Bypass YouTube bot detection by using alternative clients (standard compatibility)
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios']
+            }
+        },
         # Emulate headers of Opera browser to match user's environment and TLS fingerprint
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 OPR/112.0.0.0',
