@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import yt_dlp
+from yt_dlp.networking.impersonate import ImpersonateTarget
 
 def find_ffmpeg():
     """Locate ffmpeg executable in PATH or WinGet packages directory."""
@@ -93,7 +94,7 @@ def main():
         'max_sleep_interval': 15,
         'ffmpeg_location': ffmpeg_loc,
         # Emulate browser TLS fingerprint so that 'zapret' can bypass DPI correctly
-        'impersonate': 'chrome',
+        'impersonate': ImpersonateTarget.from_str('chrome'),
         'http_backend': 'curl_cffi',
         # Bypass YouTube bot detection by using alternative clients (standard compatibility)
         'extractor_args': {
@@ -121,7 +122,8 @@ def main():
             else:
                 print("\n[!] Процесс завершился с предупреждениями или ошибками (некоторые видео могли быть пропущены).")
     except Exception as e:
-        print(f"\n[Критическая ошибка] Не удалось выполнить скачивание: {e}")
+        err_msg = str(e) if str(e) else f"Internal error ({type(e).__name__})"
+        print(f"\n[Критическая ошибка] Не удалось выполнить скачивание: {err_msg}")
         # Print a warning if it looks like a connection/blocking issue
         err_str = str(e).lower()
         if "10054" in err_str or "10060" in err_str or "timeout" in err_str or "reset" in err_str or "connection" in err_str:
