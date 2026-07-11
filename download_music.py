@@ -92,6 +92,12 @@ def main():
         'sleep_interval': 5,
         'max_sleep_interval': 15,
         'ffmpeg_location': ffmpeg_loc,
+        # Bypass YouTube bot detection by using alternative clients (standard compatibility)
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android_creator', 'web_creator']
+            }
+        }
     }
     
     # Inject browser cookies if selected
