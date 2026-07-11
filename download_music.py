@@ -20,7 +20,6 @@ def find_ffmpeg():
                     # Walk to find the bin directory containing ffmpeg.exe
                     for root, dirs, files in os.walk(pkg_path):
                         if "ffmpeg.exe" in files:
-                            print(f"[*] Найден ffmpeg в папке WinGet: {root}")
                             return root
     return None
 
@@ -48,14 +47,6 @@ def get_browser_choice():
         return "brave"
     return None
 
-def get_proxy_choice():
-    """Prompt the user for a proxy configuration."""
-    print("\n[?] Нужен ли прокси для обхода блокировок YouTube в вашем регионе?")
-    print("    Если у вас запущен GoodbyeDPI или глобальный VPN, прокси вводить не нужно.")
-    print("    Нажмите Enter, чтобы продолжить без прокси.")
-    proxy = input("Введите адрес прокси (например, socks5://127.0.0.1:1080 или http://127.0.0.1:8080): ").strip()
-    return proxy if proxy else None
-
 def main():
     print("=" * 60)
     print("   YouTube Music Downloader (yt-dlp + ffmpeg)")
@@ -64,8 +55,8 @@ def main():
     # Locate ffmpeg
     ffmpeg_loc = find_ffmpeg()
     if not ffmpeg_loc:
-        print("[Внимание] ffmpeg не найден в системе. Скрипт не сможет конвертировать видео в MP3!")
-        print("Пожалуйста, убедитесь, что установка через 'winget install Gyan.FFmpeg' завершилась успешно.")
+        print("[Ошибка] ffmpeg не найден в системе. Скрипт не сможет сконвертировать аудио в MP3.")
+        print("Убедитесь, что ffmpeg установлен корректно.")
         sys.exit(1)
         
     # Get YouTube URL
@@ -77,11 +68,7 @@ def main():
     # Get browser for cookies
     browser = get_browser_choice()
     
-    # Get proxy config
-    proxy = get_proxy_choice()
-    
     # Output template: Music/<Channel Name>/<Video Title>.mp3
-    # Use %(channel,uploader|Unknown_Channel)s to handle cases where channel name is missing
     out_template = os.path.join("Music", "%(channel,uploader|Unknown_Channel)s", "%(title)s.%(ext)s")
     archive_path = os.path.join("Music", "archive.txt")
     
@@ -99,16 +86,10 @@ def main():
             'preferredcodec': 'mp3',
             'preferredquality': '192',  # Optimal quality / file size ratio
         }],
-        # Anti-blocking options
-        'sleep_interval': 5,          # Minimum sleep between downloads in seconds
-        'max_sleep_interval': 15,     # Maximum sleep between downloads in seconds
+        # Polite downloading: sleep between files
+        'sleep_interval': 5,
+        'max_sleep_interval': 15,
         'ffmpeg_location': ffmpeg_loc,
-        # Bypass YouTube limitations in Russia (using alternative clients)
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android_creator', 'web_creator']
-            }
-        }
     }
     
     # Inject browser cookies if selected
@@ -116,15 +97,9 @@ def main():
         print(f"[*] Будут использованы куки браузера: {browser}")
         ydl_opts['cookiesfrombrowser'] = (browser,)
         
-    # Inject proxy if selected
-    if proxy:
-        print(f"[*] Будет использован прокси: {proxy}")
-        ydl_opts['proxy'] = proxy
-        
     print("\n[*] Запуск процесса скачивания...")
     print("[*] Треки будут сохранены в папку 'Music/<Название канала>/'")
-    print(f"[*] Список уже скачанных видео сохраняется в {archive_path}")
-    print("[*] Между скачиваниями будут случайные паузы (5-15 секунд) для защиты от блокировок.")
+    print(f"[*] Список скачанных видео сохраняется в {archive_path}")
     print("=" * 60)
     
     try:
@@ -135,11 +110,12 @@ def main():
             else:
                 print("\n[!] Процесс завершился с предупреждениями или ошибками (некоторые видео могли быть пропущены).")
     except Exception as e:
-        print(f"\n[Критическая ошибка] Произошел сбой при работе yt-dlp: {e}")
-        # Explain connection issues (e.g. WinError 10054)
-        if "10054" in str(e) or "reset" in str(e).lower():
-            print("\n[Совет] Ошибка часто возникает из-за блокировки YouTube в РФ.")
-            print("Попробуйте включить VPN, GoodbyeDPI или настроить прокси в скрипте.")
+        print(f"\n[Критическая ошибка] Не удалось выполнить скачивание: {e}")
+        # Print a warning if it looks like a connection/blocking issue
+        err_str = str(e).lower()
+        if "10054" in err_str or "10060" in err_str or "timeout" in err_str or "reset" in err_str or "connection" in err_str:
+            print("\n[!] Не получается достучаться до серверов YouTube.")
+            print("    Проверьте подключение к интернету или работу средств обхода блокировок (VPN/GoodbyeDPI).")
         sys.exit(1)
 
 if __name__ == "__main__":
