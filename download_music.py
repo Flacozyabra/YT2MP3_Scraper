@@ -93,6 +93,7 @@ def main():
         'max_sleep_interval': 15,
         'ffmpeg_location': ffmpeg_loc,
         # Emulate browser TLS fingerprint so that 'zapret' can bypass DPI correctly
+        'impersonate': 'chrome',
         'http_backend': 'curl_cffi',
         # Bypass YouTube bot detection by using alternative clients (standard compatibility)
         'extractor_args': {
