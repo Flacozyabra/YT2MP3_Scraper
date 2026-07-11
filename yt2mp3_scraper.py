@@ -88,6 +88,34 @@ def check_dependencies():
     print("[+] Все зависимости проверены успешно!\n")
     return ffmpeg_loc
 
+class DownloadStats:
+    def __init__(self):
+        self.new_downloads = []       # List of titles of newly downloaded songs
+        self.skipped_archive = []     # List of titles/IDs skipped by archive
+        self.failed_downloads = []    # List of unique error strings
+
+stats = DownloadStats()
+
+class YdlLogger:
+    def debug(self, msg):
+        if "has already been recorded in the archive" in msg:
+            cleaned = msg.replace("[download] ", "").replace("has already been recorded in the archive", "").strip()
+            stats.skipped_archive.append(cleaned)
+        print(msg)
+
+    def info(self, msg):
+        print(msg)
+
+    def warning(self, msg):
+        print(msg, file=sys.stderr)
+
+    def error(self, msg):
+        cleaned_err = msg.replace("ERROR: ", "").strip()
+        # Avoid duplicate messages in failed list
+        if cleaned_err not in stats.failed_downloads:
+            stats.failed_downloads.append(cleaned_err)
+        print(msg, file=sys.stderr)
+
 # Global set to track printed video IDs and prevent duplicate success lines
 _printed_videos = set()
 
@@ -98,8 +126,41 @@ def postprocessor_hook(d):
         if video_id and video_id not in _printed_videos:
             _printed_videos.add(video_id)
             title = d['info_dict'].get('title', 'Unknown Title')
+            stats.new_downloads.append(title)
             # ANSI escape sequence for bold green: \033[1;32m and reset: \033[0m
             print(f"\n\033[1;32m[+] Успешно скачан и конвертирован трек: {title}\033[0m\n")
+
+def print_summary():
+    """Print a clean colorized download summary to the console."""
+    print("\n" + "=" * 60)
+    print("   СТАТИСТИКА ЗАГРУЗКИ / DOWNLOAD SUMMARY")
+    print("=" * 60)
+    
+    total_processed = len(stats.new_downloads) + len(stats.skipped_archive) + len(stats.failed_downloads)
+    
+    print(f"Всего обработано видео: {total_processed}")
+    
+    if stats.new_downloads:
+        print(f"\n\033[1;32m[+] Успешно скачано новых треков ({len(stats.new_downloads)}):\033[0m")
+        for title in stats.new_downloads:
+            print(f"    - {title}")
+            
+    if stats.skipped_archive:
+        print(f"\n\033[1;36m[i] Пропущено (уже скачаны ранее) ({len(stats.skipped_archive)}):\033[0m")
+        # List if small, otherwise just summary
+        if len(stats.skipped_archive) <= 10:
+            for title in stats.skipped_archive:
+                print(f"    - {title}")
+        else:
+            # Print first 5 and last 5 or just counts
+            print(f"    - всего {len(stats.skipped_archive)} файлов (список сохранен в Music/archive.txt)")
+        
+    if stats.failed_downloads:
+        print(f"\n\033[1;31m[-] Не удалось скачать ({len(stats.failed_downloads)}):\033[0m")
+        for err in stats.failed_downloads:
+            print(f"    - {err}")
+            
+    print("=" * 60 + "\n")
 
 def main():
     # Initialize ANSI escape sequences support in Windows Console/PowerShell
@@ -141,6 +202,7 @@ def main():
             'preferredquality': '192',  # Optimal quality / file size ratio
         }],
         'postprocessor_hooks': [postprocessor_hook],
+        'logger': YdlLogger(),
         # Polite downloading: sleep between files
         'sleep_interval': 5,
         'max_sleep_interval': 15,
@@ -178,13 +240,19 @@ def main():
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             exit_code = ydl.download([url])
-            if exit_code == 0:
-                print("\n[+] Процесс скачивания успешно завершен!")
-            else:
-                print("\n[!] Процесс завершился с предупреждениями или ошибками (некоторые видео могли быть пропущены).")
+            
+        # Print download statistics summary
+        print_summary()
+        
+        if exit_code == 0:
+            print("[+] Процесс скачивания успешно завершен!")
+        else:
+            print("[!] Процесс завершился с предупреждениями или ошибками (некоторые видео могли быть пропущены).")
     except Exception as e:
+        # Also print whatever summary we managed to gather before crashing
+        print_summary()
         err_msg = str(e) if str(e) else f"Internal error ({type(e).__name__})"
-        print(f"\n[Критическая ошибка] Не удалось выполнить скачивание: {err_msg}")
+        print(f"[Критическая ошибка] Не удалось выполнить скачивание: {err_msg}")
         # Print a warning if it looks like a connection/blocking issue
         err_str = str(e).lower()
         if "10054" in err_str or "10060" in err_str or "timeout" in err_str or "reset" in err_str or "connection" in err_str:
