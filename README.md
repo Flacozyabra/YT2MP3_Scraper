@@ -17,6 +17,12 @@
    ```cmd
    winget install Gyan.FFmpeg
    ```
+3. **JavaScript-интерпретатор (Node.js или Deno)**: Необходим для обхода и расшифровки алгоритмов защиты YouTube (параметр `n-challenge`). Без него скачивание большинства треков будет блокироваться с ошибкой доступа `403 Forbidden` или `Requested format is not available`.
+   Установить его на Windows можно одной командой:
+   ```cmd
+   winget install OpenJS.NodeJS
+   ```
+   *(Или легковесный аналог Deno: `winget install Deno.Deno`)*
 
 ## Запуск
 Просто дважды кликните по файлу `run.bat` в корне проекта.
