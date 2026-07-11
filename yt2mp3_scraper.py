@@ -88,12 +88,18 @@ def check_dependencies():
     print("[+] Все зависимости проверены успешно!\n")
     return ffmpeg_loc
 
+# Global set to track printed video IDs and prevent duplicate success lines
+_printed_videos = set()
+
 def postprocessor_hook(d):
     """Callback triggered on post-processing milestones. Prints a green line on success."""
     if d['status'] == 'finished' and d['postprocessor'] == 'ExtractAudio':
-        title = d['info_dict'].get('title', 'Unknown Title')
-        # ANSI escape sequence for bold green: \033[1;32m and reset: \033[0m
-        print(f"\n\033[1;32m[+] Успешно скачан и конвертирован трек: {title}\033[0m\n")
+        video_id = d['info_dict'].get('id')
+        if video_id and video_id not in _printed_videos:
+            _printed_videos.add(video_id)
+            title = d['info_dict'].get('title', 'Unknown Title')
+            # ANSI escape sequence for bold green: \033[1;32m and reset: \033[0m
+            print(f"\n\033[1;32m[+] Успешно скачан и конвертирован трек: {title}\033[0m\n")
 
 def main():
     # Initialize ANSI escape sequences support in Windows Console/PowerShell
