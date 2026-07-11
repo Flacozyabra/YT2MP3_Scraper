@@ -6,8 +6,10 @@ import yt_dlp
 def find_ffmpeg():
     """Locate ffmpeg executable in PATH or WinGet packages directory."""
     # 1. Check standard PATH
-    if shutil.which("ffmpeg"):
-        return "ffmpeg"
+    ffmpeg_path = shutil.which("ffmpeg")
+    if ffmpeg_path:
+        # Return the directory containing ffmpeg executable
+        return os.path.dirname(ffmpeg_path)
     
     # 2. Check WinGet installation path (useful if PATH wasn't updated yet)
     local_app_data = os.environ.get("LOCALAPPDATA")
