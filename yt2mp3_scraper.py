@@ -88,7 +88,18 @@ def check_dependencies():
     print("[+] Все зависимости проверены успешно!\n")
     return ffmpeg_loc
 
+def postprocessor_hook(d):
+    """Callback triggered on post-processing milestones. Prints a green line on success."""
+    if d['status'] == 'finished' and d['postprocessor'] == 'ExtractAudio':
+        title = d['info_dict'].get('title', 'Unknown Title')
+        # ANSI escape sequence for bold green: \033[1;32m and reset: \033[0m
+        print(f"\n\033[1;32m[+] Успешно скачан и конвертирован трек: {title}\033[0m\n")
+
 def main():
+    # Initialize ANSI escape sequences support in Windows Console/PowerShell
+    if os.name == 'nt':
+        os.system('')
+        
     print("=" * 60)
     print("   YT2MP3 Scraper (yt-dlp + ffmpeg)")
     print("=" * 60)
@@ -123,6 +134,7 @@ def main():
             'preferredcodec': 'mp3',
             'preferredquality': '192',  # Optimal quality / file size ratio
         }],
+        'postprocessor_hooks': [postprocessor_hook],
         # Polite downloading: sleep between files
         'sleep_interval': 5,
         'max_sleep_interval': 15,
