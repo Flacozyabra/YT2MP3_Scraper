@@ -52,7 +52,7 @@ def get_browser_choice():
 
 def main():
     print("=" * 60)
-    print("   YouTube Music Downloader (yt-dlp + ffmpeg)")
+    print("   YT2MP3 Scraper (yt-dlp + ffmpeg)")
     print("=" * 60)
     
     # Locate ffmpeg

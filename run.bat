@@ -9,6 +9,6 @@ if not exist ".venv\Scripts\activate.bat" (
 )
 
 call .venv\Scripts\activate.bat
-python download_music.py
+python yt2mp3_scraper.py
 
 pause
