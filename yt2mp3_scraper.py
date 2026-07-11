@@ -221,6 +221,12 @@ def main():
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         },
+        # Bypass heavy auth check on playlist/channel pages when using cookies to avoid DPI resets
+        'extractor_args': {
+            'youtubetab': {
+                'skip': ['authcheck']
+            }
+        }
     }
     
     # Inject browser cookies if selected
