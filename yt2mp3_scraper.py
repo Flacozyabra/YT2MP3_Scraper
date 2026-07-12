@@ -31,23 +31,14 @@ def get_browser_choice():
     print("\n[?] Хотите ли вы использовать куки вашего браузера для скачивания?")
     print("    Это полезно для спонсорских видео (если вы спонсор), приватных плейлистов или обхода ограничений возраста.")
     print("    0. Нет, скачивать без куков (по умолчанию)")
-    print("    1. Google Chrome")
+    print("    1. Opera")
     print("    2. Mozilla Firefox")
-    print("    3. Microsoft Edge")
-    print("    4. Opera")
-    print("    5. Brave")
     
-    choice = input("Выберите вариант (0-5) [0]: ").strip()
+    choice = input("Выберите вариант (0-2) [0]: ").strip()
     if choice == "1":
-        return "chrome"
+        return "opera"
     elif choice == "2":
         return "firefox"
-    elif choice == "3":
-        return "edge"
-    elif choice == "4":
-        return "opera"
-    elif choice == "5":
-        return "brave"
     return None
 
 def check_dependencies():
