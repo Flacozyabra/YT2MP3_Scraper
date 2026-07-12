@@ -154,6 +154,11 @@ def print_summary():
     print("=" * 60 + "\n")
 
 def main():
+    # Inject default installation path of Node.js to PATH to avoid WindowsApps execution alias conflicts
+    node_default_path = "C:\\Program Files\\nodejs"
+    if os.path.exists(node_default_path):
+        os.environ["PATH"] = node_default_path + os.path.pathsep + os.environ.get("PATH", "")
+
     # Initialize ANSI escape sequences support in Windows Console/PowerShell
     if os.name == 'nt':
         os.system('')
